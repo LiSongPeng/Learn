@@ -5,3 +5,4 @@ operatingSystem/.vscode/
 operatingSystem/Bz1621.lzh/
 operatingSystem/HariboteOS/
 operatingSystem/softDisk.img
+*.o
