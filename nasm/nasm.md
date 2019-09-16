@@ -17,3 +17,23 @@
 - **dq 1.234567e20** ; double−precision float
 - **dt 1.234567e20** ; extended−precision float
 #### 1.1.2 保留字声明伪指令
+- **RESB**, **RESW**, **RESD**, **RESQ**, **REST**, **RESO**, **RESY** and **RESZ**
+- **buffer: resb 64** ; reserve 64 bytes
+- **wordvar: resw 1** ; reserve a word
+- **realarray resq 10** ; array of ten reals
+- **ymmval: resy 1** ; one YMM register
+- **zmmvals: resz 32** ; 32 ZMM registers
+#### 1.1.3 INCBIN 导入命令
+- **incbin "file.dat"** ; include the whole file
+- **incbin "file.dat",1024** ; skip the first 1024 bytes
+- **incbin "file.dat",1024,512** ; skip the first 1024, and actually include at most 512
+#### 1.1.4  EQU 常量定义命令
+- **message db 'hello world'**
+  **msglen equ $ - message**
+#### 1.1.5  TIMES 指令或数据重复命令
+- **zerobuf: times 64 db 0**
+- **buffer: db 'hello world'**
+  **times 64 - $ + buffer db ' '**
+- **times 100 movesb**
+### 1.2 有效地址
+
