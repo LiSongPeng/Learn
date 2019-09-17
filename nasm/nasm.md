@@ -36,4 +36,74 @@
   **times 64 - $ + buffer db ' '**
 - **times 100 movesb**
 ### 1.2 有效地址
-
+#### 1.2.1 有效地址示例
+- **wordvar dw 123**
+  **mov ax, [wordvar]**
+  **mov ax, [wordvar + 1]**
+  **mov ax, [es:wordvar + bx]** 间接寻址默认段寄存器为ds，此处强制使用es作为段寄存器
+- **mov eax, [ebx * 5]** ; 等价于 [ebx * 4 + ebx]
+  **mov eax, [label * 2 - label2]** ; ie [label1 + (label1 - label2)]
+### 1.3 常量
+#### 1.3.1 可数常量
+- 规则
+1. 支持二进制、八进制、十进制、十六进制
+2. 长数字字符串可用_分割
+- 示例
+<br/>
+**mov ax,200** ; decimal
+<br/>
+**mov ax,0200** ; still decimal
+<br/>
+**mov ax,0200d** ; explicitly decimal
+<br/>
+**mov ax,0d200** ; also decimal
+<br/>
+**mov ax,0c8h** ; hex
+<br/>
+**mov ax,$0c8** ; hex again: the 0 is required
+<br/>
+**mov ax,0xc8** ; hex yet again
+<br/>
+**mov ax,0hc8** ; still hex
+<br/>
+**mov ax,310q** ; octal
+<br/>
+**mov ax,310o** ; octal again
+<br/>
+**mov ax,0o310** ; octal yet again
+<br/>
+**mov ax,0q310** ; octal yet again
+<br/>
+**mov ax,11001000b** ; binary
+<br/>
+**mov ax,1100_1000b** ; same binary constant
+<br/>
+**mov ax,1100_1000y** ; same binary constant once more
+<br/>
+**mov ax,0b1100_1000** ; same binary constant yet again
+<br/>
+**mov ax,0y1100_1000** ; same binary constant yet again
+#### 1.3.2 字符
+- 规则
+1. 支持转义字符 **\\**
+2. 支持 **"** 、 **'** 、**`** 表示字符串
+3. 支持UTF-8编码字符串
+#### 1.3.3 字符常量
+- 规则
+1. 字符常量最高八字节长
+2. 采用小端方式存储
+- 示例
+**mov eax, 'adcd'** 因为是小端存储，存到内存中会是0x64636261而不是0x61626364
+#### 1.3.3 字符串常量
+- 规则
+1. 在伪指令上下文、预处理指令中使用
+- 示例1
+1. **db ’hello’** ; string constant
+1. **db ’h’,’e’,’l’,’l’,’o’** ; equivalent character constants
+- 示例2(以下全都等价) 
+<br/>
+**dd ’ninechars’** ; doubleword string constant
+<br/>
+**dd ’nine’,’char’,’s’** ; becomes three doublewords
+<br/>
+**db ’ninechars’,0,0,0** ; and really looks like this
