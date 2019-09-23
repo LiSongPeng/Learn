@@ -147,3 +147,25 @@ call weird_seg:(procedure wrt weird_seg)
 ```
 ### 1.7 临界表达式
 - NASM有可选多通道优化器，但是临界表达式只能用第一个通道
+```
+times (label−$) db 0     ; 此种形式非法，times指令属于临界表达式，只能采用定义在其之前的符号
+label: db ’Where am I?’
+```
+### 1.8 本地标签
+- 以 **.** 号开头的标签属于本地标签，本地标签意味着与之前非本地标签关联
+```
+label1 ; some code
+.loop ; some more code
+    jne .loop
+    ret
+label2 ; some code
+.loop ; some more code
+    jne .loop
+    ret
+```
+- 本地标签会被定义成label.local_label的形式，所以可以通过以下方式进行跳转
+```
+label3 ; some more code
+; and some more
+jmp label1.loop
+```
