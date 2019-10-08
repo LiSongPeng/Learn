@@ -169,3 +169,129 @@ label3 ; some more code
 ; and some more
 jmp label1.loop
 ```
+- 以 **..@** 开始的另一种宏
+```
+    label1: ; a non−local label
+    .local: ; this is really label1.local
+    ..@foo: ; this is a special symbol
+    label2: ; another non−local label
+    .local: ; this is really label2.local
+        jmp ..@foo ; this will jump three lines up
+```
+## 2. NASM预处理器
+### 2.1 单行宏
+### 2.1.1  **%define**
+- **%define** 大小写敏感
+- 示例
+```
+%define ctrl 0x1F &
+%define param(a,b) ((a)+(a)*(b))
+mov byte [param(2,ebx)], ctrl ’D’
+; which will expand to
+mov byte [(2)+(2)*(ebx)], 0x1F & ’D’
+```
+- 当一个宏定义中包含对其他宏的使用时，宏展开是在调用时而不是在定义时
+```
+%define a(x) 1+b(x)
+%define b(x) 2*x
+mov ax,a(8)
+; 因此b宏不会报错
+```
+- **%idefine** 大小写不敏感
+- 解决递归调用和循环依赖
+```
+%define a(x) 1+a(x)
+mov ax,a(3)
+; 以上只会扩展一次变成1 +a(3), 以此解决递归调用的问题
+```
+- 宏可以重载
+```
+%define foo(x) 1+x
+%define foo(x,y) 1+x*y
+; 参数个数不同进行重载
+```
+### 2.1.2  **%xdefine** **%ixdefine**
+```
+%define isTrue 1
+%define isFalse isTrue
+%define isTrue 0
+val1: db isFalse
+%define isTrue 1
+val2: db isFalse
+; 结果val1 0 val2 1
+; 因为%define宏在调用时展开
+%xdefine isTrue 1
+%xdefine isFalse isTrue
+%xdefine isTrue 0
+val1: db isFalse
+%xdefine isTrue 1
+val2: db isFalse
+; 结果val1 1 val2 1
+; 因为%xdefine宏在定义时展开
+```
+### 2.1.3  间接宏 **%[...]** 
+```
+%define Foo16 16
+%define Foo32 32
+%define Foo64 64
+mov ax,Foo%[__BITS__] ; The Foo value
+; __BITS__ 内嵌宏
+```
+```
+%xdefine Bar Quux ; Expands due to %xdefine
+%define Bar %[Quux] ; Expands due to %[...]
+; 以上两句等效
+```
+### 2.1.4  宏连接指令 **%+** 
+- 指令之后需要加空格
+```
+%define BDASTART 400h ; Start of BIOS data area
+struc tBIOSDA ; its structure
+.COM1addr RESW 1
+.COM2addr RESW 1
+; ..and so on
+endstruc
+mov ax,BDASTART + tBIOSDA.COM1addr
+mov bx,BDASTART + tBIOSDA.COM2addr
+```
+```
+; Macro to access BIOS variables by their names (from tBDA):
+%define BDA(x) BDASTART + tBIOSDA. %+ x
+mov ax,BDA(COM1addr)
+mov bx,BDA(COM2addr)
+```
+### 2.1.5 **%?** **%??**
+- **%?** 存储调用时的宏名称
+- **%??** 存储定义时的宏名称
+```
+%idefine Foo mov %?,%??
+foo
+FOO
+; will expand to:
+mov foo,Foo
+mov FOO,Foo
+```
+### 2.1.6 撤销宏定义 **%undef**
+```
+%define foo bar
+%undef foo
+mov eax, foo
+; 会展开成mov eax, foo
+```
+### 2.1.7 预处理器变量 **%assign** **%iassign**
+- 被用来定义没有参数并且有一个数字的值
+```
+%assign i i+1
+```
+### 2.1.8 定义字符串 **%defstr** **%idefstr**
+```
+%defstr test TEST
+; is equivalent to
+%define test ’TEST’
+```
+### 2.1.9 定义标志 **%deftok** **%ideftok**
+```
+%deftok test ’TEST’
+; is equivalent to
+%define test TEST
+```
